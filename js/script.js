@@ -8,67 +8,90 @@ P.S. Здесь есть несколько вариантов решения з
 
 'use strict';
 
-const movieDB = {
-    movies: [
-        "Логан",
-        "Лига справедливости",
-        "Ла-ла лэнд",
-        "Одержимость",
-        "Скотт Пилигрим против..."
-    ]
-};
+document.addEventListener('DOMContentLoaded', () => {
 
-const   advertisementBlockRight = document.querySelectorAll('.promo__adv img'),
-        bg = document.querySelector('.promo__bg'), 
-        genre = bg.querySelector('.promo__genre'),
-        moviesList = document.querySelector('.promo__interactive-list'),
-        addMovie = document.querySelector('.promo__interactive .add'),
-        addMovieTitle = addMovie[0],
-        addToFavorites = addMovie[1],
-        addMovieBtn = addMovie[2],
-        deleteMovieBtn = document.querySelectorAll('.promo__interactive-item'),
-        checkboxFavorite = document.querySelector('.promo__interactive .add .yes').previousElementSibling;
+    const movieDB = {
+        movies: [
+            "Логан",
+            "Лига справедливости",
+            "Ла-ла лэнд",
+            "Одержимость",
+            "Скотт Пилигрим против..."
+        ]
+    };
+    
+    const   advertisementBlockRight = document.querySelectorAll('.promo__adv img'),
+            bg = document.querySelector('.promo__bg'), 
+            genre = bg.querySelector('.promo__genre'),
+            moviesList = document.querySelector('.promo__interactive-list'),
+            addMovie = document.querySelector('.promo__interactive .add'),
+            addMovieTitle = addMovie[0],
+            addMovieBtn = addMovie[2],
+            checkboxFavorite = document.querySelector('.promo__interactive .add .yes').previousElementSibling;
+    
+    const sortArr = (arr) => {
+        arr.sort();
+    };
 
-function showMovies() {
-    movieDB.movies.sort();
-    moviesList.innerHTML = '';
-    movieDB.movies.forEach((film, i) => {
-        moviesList.innerHTML += `
-        <li class="promo__interactive-item"> ${i+1}. ${film}
-            <div class="delete"></div>
-        </li>
-        `;
+    const deleteAdv = (arr) => {
+        arr.forEach(item => {
+            item.remove();
+        });
+    };
+
+    const makeChanges = () => {
+        genre.textContent = "Драма";
+        bg.style.backgroundImage = "url('../img/bg.jpg')";
+    };
+
+    function createMovieList(films, parent) {
+        parent.innerHTML = '';
+        sortArr(films);
+
+            films.forEach((film, i) => {
+                parent.innerHTML += `
+                <li class="promo__interactive-item"> ${i+1}. ${film}
+                    <div class="delete"></div>
+                </li>
+                `;
+            });
+
+            document.querySelectorAll('.delete').forEach((btn, i) => {
+                btn.addEventListener('click', () => {
+                    btn.parentElement.remove();
+                    movieDB.movies.splice(i, 1);
+                    createMovieList(films, parent);
+                });
+            });
+        }
+    
+    addMovie.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        let newFilm = addMovieTitle.value;
+        const favorite = checkboxFavorite.checked;
+
+        if (newFilm) {
+
+            if (newFilm.length > 21) {
+                newFilm = `${newFilm.substring(0, 22)}...`;
+            }
+
+            if (favorite) {
+                console.log("Добавляем любимый фильм");
+            }
+
+            movieDB.movies.push(newFilm);
+            sortArr(movieDB.movies);
+            createMovieList(movieDB.movies, moviesList);
+    
+        }
+
+        event.target.reset();
     });
-};
 
-showMovies();
+    deleteAdv(advertisementBlockRight);
+    makeChanges();
+    createMovieList(movieDB.movies, moviesList);
 
-function checkboxVerify(item) {
-    if (item == true) {
-        console.log('Добавляем любимый фильм');
-    }
-}
-
-addMovieBtn.addEventListener('click', function(event) {
-    event.preventDefault();
-    if (addMovieTitle.value != '' && addMovieTitle.value != null && addMovieTitle.value.length < 22) {
-        movieDB.movies.push(addMovieTitle.value);
-        checkboxVerify(checkboxFavorite.checked);
-        console.log(movieDB.movies);
-        addMovieTitle.value = '';
-        showMovies();
-    } else if (addMovieTitle.value != '' && addMovieTitle.value != null && addMovieTitle.value.length > 21) {
-        movieDB.movies.push(`${addMovieTitle.value.slice(0, 21)}...`);
-        checkboxVerify(checkboxFavorite.checked);
-        console.log(movieDB.movies);
-        addMovieTitle.value = '';
-        showMovies();
-    }
 });
-
-advertisementBlockRight.forEach(item => {
-    item.remove();
-});
-
-genre.textContent = "Драма";
-bg.style.backgroundImage = "url('../img/bg.jpg')";
